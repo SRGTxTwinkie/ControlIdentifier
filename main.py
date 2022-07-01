@@ -3,7 +3,7 @@ import json as jsn
 import os
 
 
-def getControls(readFolder: str):
+def getControls(readFolder: str, returnLoadedJson: bool = True, retryTime=0) -> object:
     # Walk the readFolder and get all the files
     files = []
     for root, dirs, files in os.walk(readFolder):
@@ -17,10 +17,16 @@ def getControls(readFolder: str):
     }
     for img in files:
         try:
-            x = ps.locateCenterOnScreen(f"./{readFolder}/{img}")
+            x = ps.locateCenterOnScreen(
+                f"./{readFolder}/{img}", minSearchTime=retryTime)
             imgName = os.path.basename(img).split(".")[0]
             output.update({imgName: {"x": str(x[0]), "y": str(x[1])}})
         except:
             output.update({imgName: {"x": None, "y": None}})
             print(f"{imgName} not found")
-    jsn.dump(output, open(f"{readFolder}/controls.json", "w"))
+
+    if not returnLoadedJson:
+        jsn.dump(output, open(f"{readFolder}/controls.json", "w"))
+        print(f"File Created at {readFolder}")
+    else:
+        return output
